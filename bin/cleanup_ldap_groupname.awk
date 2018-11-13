@@ -40,9 +40,6 @@ BEGIN {
     # Remove sequences which are consequences of empty elements
     gsub(/_-_/, "_", gruppenName)
 
-    # lower-case everything
-    gruppenName=tolower(gruppenName);
-
     # Check length
     if (length(gruppenName) > 64) { print "ERROR too long: " gruppenName}
     else { print gruppenName };
