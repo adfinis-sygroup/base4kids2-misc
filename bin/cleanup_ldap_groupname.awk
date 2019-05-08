@@ -1,6 +1,6 @@
 #!/bin/awk -f
 
-# The script expectes semi-colon separated values
+# The script expects semi-colon separated values
 
 BEGIN {
     FS = ";"
@@ -14,33 +14,42 @@ BEGIN {
     if ($1 == "") { next; }
 
     # Concatenate the initial group name
-    # <KLASSE-BEZEICHNUNG>_<KLASSE-UNTERGRUPPE>_<KLASSE-SCHULJAHR>_<SCHULANALGE>
-    # Example: "MK KG_1_2018/2019_KGä1+2"
+    # <KLASSENBEZEICHNUNG>_<KLASSEN-UNTERGRUPPE>[_<KLASSENZUSATZ>]_<KLASSE-SCHULJAHR>_<SCHULANLAGE>
+    # Example: "MK KG_1_1-3_2018/2019_KGä1+2"
 
     # Replace dash in year with underscores
-    gsub(/\//, "-", $3);
+    gsub(/\//, "-", $18);
 
-    gruppenName=$1 "_" $2 "_" $3 "_" $10
-    #print "initial gruppenName: " gruppenName
+    # Use an empty Klassenzusatz by default
+    classSupplement=""
+
+    # Check if we have a Mehrjahrgangsklasse
+    # those need the Klassenzusatz value to be unique
+    if ($13 ~ /^MK .*/) {
+        classSupplement="_" $15
+    }
+
+    groupName=$13 "_" $14 classSupplement "_" $18 "_" $10
+    #print "initial groupName: " groupName
 
     # Replace spaces, slashs and plus signs with underscores
-    gsub(/( |\/|\+)/, "_", gruppenName);
+    gsub(/( |\/|\+)/, "_", groupName);
 
     # Replace Umlauts
-    gsub(/ä/, "ae", gruppenName);
-    gsub(/ö/, "oe", gruppenName);
-    gsub(/ü/, "ue", gruppenName);
+    gsub(/ä/, "ae", groupName);
+    gsub(/ö/, "oe", groupName);
+    gsub(/ü/, "ue", groupName);
 
     # Remove multiple underscores
-    gsub(/_{2,}/, "_", gruppenName);
+    gsub(/_{2,}/, "_", groupName);
 
     # Remove underscores at the beginning or end of the name
-    gsub(/^_|_$/, "", gruppenName)
+    gsub(/^_|_$/, "", groupName)
 
     # Remove sequences which are consequences of empty elements
-    gsub(/_-_/, "_", gruppenName)
+    gsub(/_-_/, "_", groupName)
 
     # Check length
-    if (length(gruppenName) > 64) { print "ERROR too long: " gruppenName}
-    else { print gruppenName };
+    if (length(groupName) > 64) { print "ERROR too long: " groupName}
+    else { print groupName };
 }
