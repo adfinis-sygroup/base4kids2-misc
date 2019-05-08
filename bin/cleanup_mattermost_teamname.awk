@@ -1,6 +1,6 @@
 #!/bin/awk -f
 
-# The script expectes semi-colon separated values
+# The script expects semi-colon separated values
 
 BEGIN {
     FS = ";"
@@ -14,9 +14,19 @@ BEGIN {
     if ($1 == "") { next; }
 
     # Concatenate the initial team name
-    # <KLASSE-BEZEICHNUNG>-<KLASSE-UNTERGRUPPE>-<SCHULGEBAEUDE-KURZBEZEICHNUNG>
+    # <KLASSE-BEZEICHNUNG>-<KLASSE-UNTERGRUPPE>[-<KLASSENZUSATZ>]-<SCHULGEBAEUDE-KURZBEZEICHNUNG>
     # Example: "MK KG-1-KGä1+2"
-    teamName=$1 "-" $2 "-" $4
+
+    # Use an empty Klassenzusatz by default
+    classSupplement=""
+
+    # Check if we have a Mehrjahrgangsklasse
+    # those need the Klassenzusatz value to be unique
+    if ($13 ~ /^MK .*/) {
+        classSupplement="-" $15
+    }
+
+    teamName=$13 "-" $14 classSupplement "-" $4
     #print "initial teamName: " teamName
 
     # Remove the "MK " (Mehrjahrgangsklassen) or "HPS " prefixes
